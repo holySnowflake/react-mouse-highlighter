@@ -1,14 +1,18 @@
 var React = require('react');
+var ReactDOM = require('react-dom');
 
 var App = React.createClass({
+
+  // getDefaultProps: function(){
+  //   var self = this;
+  //   self.state.context.lineWidth = 5;
+  //   self.state.context.strokeStyle = 'yellow';
+  //   self.state.context.strokeOpacity = 0.5;
+  // }
 
   getInitialState: function(){
     var mouse, last_mouse;
     return {
-      mouse: {
-        x: 0,
-        y: 0
-      },
       last_mouse: {
         x: 0,
         y: 0
@@ -16,14 +20,12 @@ var App = React.createClass({
     };
   },
 
-    // context.lineWidth = 5;
-    // context.strokeStyle = 'yellow';
-    // context.strokeOpacity = 0.5;
 
+//actual drawing function.
   paintOnCanvas: function(){
     var self = this;
     var context = self.state.context;
-    if (this.state.context) {
+    if (self.state.context) {
       context.beginPath();
       context.moveTo(self.state.last_mouse.x, self.state.last_mouse.y);
       context.lineTo(self.state.mouse.x, self.state.mouse.y);
@@ -31,12 +33,14 @@ var App = React.createClass({
     }
   },
 
+//when and while the mouseMoves,
   mouseMove: function(mouseMoveEvent) {
     var self = this;
-    self.state.last_mouse.x = self.mouse.x;
-    self.state.last_mouse.y = self.mouse.y;
-    self.state.mouse.x = event.pageX - this.offsetLeft;
-    self.state.mouse.y = event.pageY - this.offsetTop;
+    self.state.last_mouse.x = self.state.mouse.x;
+    self.state.last_mouse.y = self.state.mouse.y;
+    self.state.mouse.x = event.pageX - canvas.offsetLeft;
+    self.state.mouse.y = event.pageY - canvas.offsetTop;
+    this.paintOnCanvas();
   },
 
   componentDidMount: function(){
@@ -46,16 +50,26 @@ var App = React.createClass({
     self.state.context = context;
 
     window.onmousedown = function(event){
-      window.onmousemove = self.mouseMove;
+      if (!self.state.mouse) {
+        self.setState({
+          mouse:{
+            x: event.pageX - canvas.offsetLeft,
+            y: event.pageY - canvas.offsetTop
+          }
+        })
+      };
+      window.addEventListener("mousemove", self.mouseMove);
     };
 
     window.onmouseup = function(event){
-      window.detachEvent("onmousemove", self.mouseMove);
+      self.setState({
+        mouse: null
+      })
+      window.removeEventListener("mousemove", self.mouseMove);
     };
   },
 
   render: function() {
-    this.paintOnCanvas();
     return (
       <canvas id='canvas' width='400' height='300'></canvas>
     )
